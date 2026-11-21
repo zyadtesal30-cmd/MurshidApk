@@ -7,8 +7,7 @@ source.include_exts = py,png,jpg,ttf
 source.include_patterns = fonts/*
 source.exclude_dirs = .github,bin,.buildozer
 version = 1.0.0
-requirements = python3,kivy==2.3.0,arabic-reshaper==3.0.0,python-bidi==0.4.2,six,setuptools,pyjnius,android
-orientation = portrait
+requirements = python3,kivy>=2.3.1,arabic-reshaper==3.0.0,python-bidi==0.4.2,six,setuptools,pyjnius,androidorientation = portrait
 fullscreen = 0
 android.archs = arm64-v8a, armeabi-v7a
 android.api = 33
