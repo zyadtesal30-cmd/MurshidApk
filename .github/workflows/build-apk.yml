@@ -1,21 +1,87 @@
-name: Build APK
+name: Build Murshid APK
+
 on:
   push:
     branches: [main, master]
-  workflow_dispatch: {}
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build Android APK
+    runs-on: ubuntu-22.04
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      # 1. Download source code
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # 2. Install Python
+      - name: Setup Python
+        uses: actions/setup-python@v7
         with:
-          command: buildozer android debug
-          buildozer_version: stable
+          python-version: '3.11'
+
+      # 3. Install Java JDK
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # 4. Install Linux dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            git \
+            zip \
+            unzip \
+            autoconf \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libtinfo6 \
+            cmake \
+            libffi-dev \
+            libssl-dev \
+            build-essential
+
+      # 5. Install Buildozer
+      - name: Install Buildozer
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install buildozer
+          pip install Cython==0.29.34
+
+      # 6. Verify configuration
+      - name: Verify project
+        run: |
+          test -f buildozer.spec || {
+            echo "ERROR: buildozer.spec not found"
+            exit 1
+          }
+
+          echo "Project configuration found"
+
+      # 7. Build APK
+      - name: Build Android APK
+        env:
+          BUILDOZER_WARN_ON_ROOT: '0'
+        run: |
+          yes | buildozer android debug
+
+      # 8. Upload APK
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Murshid-APK
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
+          if-no-files-found: error
+          retention-days: 7
+```
